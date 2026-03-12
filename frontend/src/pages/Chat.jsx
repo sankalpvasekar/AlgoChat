@@ -23,7 +23,8 @@ export default function Chat() {
   const fetchConversations = async () => {
     if (!user) return;
     try {
-        const res = await fetch(`http://localhost:8000/api/conversations/?user_id=${user.id}`);
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        const res = await fetch(`${apiUrl}/api/conversations/?user_id=${user.id}`);
         if(res.ok) {
             const data = await res.json();
             setConversations(data.conversations || []);
@@ -43,7 +44,8 @@ export default function Chat() {
     setIsLoading(true);
     setMessages([]);
     try {
-        const res = await fetch(`http://localhost:8000/api/messages/${id}/`);
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        const res = await fetch(`${apiUrl}/api/messages/${id}/`);
         if(res.ok) {
             const data = await res.json();
             setMessages(data.messages || []);
@@ -96,7 +98,8 @@ export default function Chat() {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/ask/', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/ask/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

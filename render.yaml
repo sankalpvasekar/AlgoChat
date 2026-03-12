@@ -1,0 +1,38 @@
+services:
+  # Backend: Django Web Service
+  - type: web
+    name: algochat-backend
+    env: python
+    buildCommand: "./render_build.sh"
+    startCommand: "cd backend && gunicorn backend.wsgi --log-file -"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "algochat-backend.onrender.com"
+      - key: CORS_ALLOWED_ORIGINS
+        value: "https://algochat.onrender.com"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: algochat-db
+          property: connectionString
+      - key: GROQ_API_KEY
+        sync: false # Set this in Render dashboard
+
+  # Frontend: Vite Static Site
+  - type: static
+    name: algochat-frontend
+    env: static
+    buildCommand: "cd frontend && npm install && npm run build"
+    publishPath: "./frontend/dist"
+    envVars:
+      - key: VITE_API_URL
+        value: "https://algochat-backend.onrender.com"
+
+databases:
+  - name: algochat-db
+    plan: free

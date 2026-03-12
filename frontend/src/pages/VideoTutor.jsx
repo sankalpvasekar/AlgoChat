@@ -38,7 +38,8 @@ export default function VideoTutor() {
         setChatHistory([]);
 
         try {
-            const response = await fetch('http://localhost:8000/api/video/process/', {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            const response = await fetch(`${apiUrl}/api/video/process/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url: videoUrl })
@@ -73,7 +74,8 @@ export default function VideoTutor() {
         setIsChatLoading(true);
 
         try {
-            const response = await fetch('http://localhost:8000/api/video/chat/', {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            const response = await fetch(`${apiUrl}/api/video/chat/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ video_id: videoId, query: chatQuery })
