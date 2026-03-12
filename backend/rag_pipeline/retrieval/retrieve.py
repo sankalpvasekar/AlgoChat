@@ -3,14 +3,22 @@ import pickle
 from sentence_transformers import SentenceTransformer
 import numpy as np
 
+import os
+
+# Build paths relative to this file
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+DATA_DIR = os.path.join(BASE_DIR, "data", "processed")
+
 # Load embedding model
 model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
 # Load FAISS index
-index = faiss.read_index("data/processed/faiss_index.bin")
+index_path = os.path.join(DATA_DIR, "faiss_index.bin")
+index = faiss.read_index(index_path)
 
 # Load text chunks
-with open("data/processed/chunks.pkl", "rb") as f:
+chunks_path = os.path.join(DATA_DIR, "chunks.pkl")
+with open(chunks_path, "rb") as f:
     chunks = pickle.load(f)
 
 # FAISS index and chunks loaded
