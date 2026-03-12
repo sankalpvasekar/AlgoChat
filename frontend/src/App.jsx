@@ -15,25 +15,10 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
           
-          <Route path="/chat" element={
-            <ProtectedRoute>
-              <Chat />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/practice" element={
-            <ProtectedRoute>
-              <Practice />
-            </ProtectedRoute>
-          } />
-
-          <Route path="/video-tutor" element={
-            <ProtectedRoute>
-              <VideoTutor />
-            </ProtectedRoute>
-          } />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/practice" element={<Practice />} />
+          <Route path="/video-tutor" element={<VideoTutor />} />
           
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

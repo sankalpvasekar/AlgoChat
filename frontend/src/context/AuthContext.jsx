@@ -3,15 +3,16 @@ import { createContext, useContext, useState, useEffect } from 'react';
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState({
+        id: '1',
+        name: 'Learner',
+        email: 'learner@algochat.ai',
+        role: 'student'
+    });
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        // Mock checking for an existing session on load
-        const storedUser = localStorage.getItem('dsa_mentor_user');
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
+        // No longer need to check localStorage for mock flow
         setLoading(false);
     }, []);
 

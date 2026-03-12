@@ -16,9 +16,8 @@ export default function Home() {
                    <span className="brand-title">Algo Chat</span>
                 </div>
                 <div className="nav-actions">
-                    {!user && <NavLink to="/login" className="nav-link">Sign In</NavLink>}
-                    <NavLink to={user ? "/chat" : "/login"} className="nav-btn-primary">
-                        {user ? "Go to App" : "Get Started"}
+                    <NavLink to="/chat" className="nav-btn-primary">
+                        Start Learning
                     </NavLink>
                 </div>
             </nav>
@@ -41,13 +40,8 @@ export default function Home() {
                 
                 <div className="hero-cta-group">
                    <NavLink to="/chat" className="hero-btn-primary">
-                      {user ? "Continue Learning →" : "Start Learning →"}
+                      Start Learning →
                    </NavLink>
-                   {!user && (
-                       <NavLink to="/login" className="hero-btn-secondary">
-                          Sign In
-                       </NavLink>
-                   )}
                 </div>
 
                 {/* Example feature cards at the bottom mimicking Image 5 */}
