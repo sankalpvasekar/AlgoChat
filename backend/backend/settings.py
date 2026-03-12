@@ -34,6 +34,7 @@ ALLOWED_HOSTS = ["*"]
 
 CORS_ALLOWED_ORIGINS = [
     "https://algochat.vercel.app",
+    "https://algo-chat-tau.vercel.app",
     "http://localhost:5173"
 ]
 
