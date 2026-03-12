@@ -1,0 +1,45 @@
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.venv/
+.pytest_cache/
+.coverage
+
+# Databases & Data
+db.sqlite3
+backend/data/processed/
+*.bin
+*.pkl
+
+# JavaScript / Node
+node_modules/
+dist/
+build/
+.npm
+.eslintcache
+
+# Media / Temporary
+audio_*.m4a
+audio_*.mp3
+audio_*.wav
+*.zip
+
+# System / IDE
+.DS_Store
+.idea/
+.vscode/
+.gemini/
+.agent/
+.agents/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
