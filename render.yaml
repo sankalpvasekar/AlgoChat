@@ -4,7 +4,7 @@ services:
     name: algochat-backend
     env: python
     buildCommand: "./render_build.sh"
-    startCommand: "cd backend && gunicorn backend.wsgi:application --log-file -"
+    startCommand: "cd backend && gunicorn backend.wsgi:application --log-file - --workers 1 --timeout 120"
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.0

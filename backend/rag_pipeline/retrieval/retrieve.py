@@ -1,6 +1,4 @@
-import faiss
 import pickle
-from sentence_transformers import SentenceTransformer
 import numpy as np
 import os
 
@@ -16,6 +14,7 @@ _chunks = None
 def get_model():
     global _model
     if _model is None:
+        from sentence_transformers import SentenceTransformer
         print("Loading embedding model...")
         _model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
     return _model
@@ -23,6 +22,7 @@ def get_model():
 def get_index_and_chunks():
     global _index, _chunks
     if _index is None or _chunks is None:
+        import faiss
         index_path = os.path.join(DATA_DIR, "faiss_index.bin")
         chunks_path = os.path.join(DATA_DIR, "chunks.pkl")
 

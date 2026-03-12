@@ -1,24 +1,30 @@
 import os
-import faiss
 import pickle
 import numpy as np
-from sentence_transformers import SentenceTransformer
-
-# Load embedding model (same as the main RAG pipeline for consistency)
-model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
 # Storage path for video-specific indices
 VIDEO_INDEX_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "video_vectors")
 os.makedirs(VIDEO_INDEX_DIR, exist_ok=True)
 
+_model = None
+
+def get_model():
+    global _model
+    if _model is None:
+        from sentence_transformers import SentenceTransformer
+        _model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+    return _model
+
 def index_video_transcript(video_id, chunks):
     """
     Creates and saves a FAISS index for a specific video's transcript chunks.
     """
+    import faiss
     if not chunks:
         print(f"WARNING: No chunks to index for video {video_id}")
         return False
         
+    model = get_model()
     texts = [c['text'] for c in chunks]
     embeddings = model.encode(texts).astype("float32")
     
@@ -42,6 +48,7 @@ def query_video_rag(video_id, query, top_k=3):
     """
     Retrieves most relevant chunks from a specific video's index.
     """
+    import faiss
     index_path = os.path.join(VIDEO_INDEX_DIR, f"{video_id}.index")
     metadata_path = os.path.join(VIDEO_INDEX_DIR, f"{video_id}.pkl")
     
@@ -55,6 +62,7 @@ def query_video_rag(video_id, query, top_k=3):
         chunks = pickle.load(f)
         
     # Search
+    model = get_model()
     query_embedding = model.encode([query]).astype("float32")
     distances, indices = index.search(query_embedding, top_k)
     
