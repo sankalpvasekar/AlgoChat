@@ -30,9 +30,12 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-np#t+h!#rtvu$ta%^62!kk7te0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = ["*"]
 
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:5173').split(',')
+CORS_ALLOWED_ORIGINS = [
+    "https://algochat.vercel.app",
+    "http://localhost:5173"
+]
 
 
 # Application definition
