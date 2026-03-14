@@ -81,14 +81,34 @@ export default function VideoTutor() {
                 body: JSON.stringify({ video_id: videoId, query: chatQuery })
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                setChatHistory(prev => [...prev, { role: 'assistant', content: data.answer }]);
-            } else {
-                setChatHistory(prev => [...prev, { role: 'assistant', content: "Sorry, I had trouble finding that in the video." }]);
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.status}`);
+            }
+
+            // Add placeholder assistant message
+            setChatHistory(prev => [...prev, { role: 'assistant', content: '' }]);
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let assistantText = "";
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                assistantText += chunk;
+
+                setChatHistory(prev => {
+                    const next = [...prev];
+                    if (next.length > 0) {
+                        next[next.length - 1] = { ...next[next.length - 1], content: assistantText };
+                    }
+                    return next;
+                });
             }
         } catch (err) {
-            setChatHistory(prev => [...prev, { role: 'assistant', content: "Connection error. Please try again." }]);
+            setChatHistory(prev => [...prev, { role: 'assistant', content: `Connection error: ${err.message}.` }]);
         } finally {
             setIsChatLoading(false);
         }

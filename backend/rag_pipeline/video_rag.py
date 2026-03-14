@@ -11,8 +11,8 @@ _model = None
 def get_model():
     global _model
     if _model is None:
-        from sentence_transformers import SentenceTransformer
-        _model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+        from rag_pipeline.embeddings_api import CloudEmbedder
+        _model = CloudEmbedder()
     return _model
 
 def index_video_transcript(video_id, chunks):

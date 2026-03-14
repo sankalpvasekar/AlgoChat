@@ -14,9 +14,9 @@ _chunks = None
 def get_model():
     global _model
     if _model is None:
-        from sentence_transformers import SentenceTransformer
-        print("Loading embedding model...")
-        _model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+        from rag_pipeline.embeddings_api import CloudEmbedder
+        print("Initializing Cloud Embedder API...")
+        _model = CloudEmbedder()
     return _model
 
 def get_index_and_chunks():

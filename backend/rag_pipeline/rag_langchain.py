@@ -14,9 +14,10 @@ def get_vectorstore():
     if _vectorstore is None:
         import faiss
         from langchain_community.vectorstores import FAISS
-        from langchain.embeddings import HuggingFaceEmbeddings
         from langchain_community.docstore.in_memory import InMemoryDocstore
         from langchain_core.documents import Document
+        from rag_pipeline.embeddings_api import CloudEmbedder
+        from langchain_core.embeddings import Embeddings
 
         data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'processed')
         index_path = os.path.join(data_dir, "faiss_index.bin")
@@ -25,9 +26,17 @@ def get_vectorstore():
         if not os.path.exists(index_path) or not os.path.exists(chunks_path):
             print("WARNING: FAISS assets missing. LangChain RAG disabled.")
             return None
+        
+        class HFCloudEmbeddings(Embeddings):
+            def __init__(self):
+                self.embedder = CloudEmbedder()
+            def embed_documents(self, texts):
+                return self.embedder.encode(texts, convert_to_numpy=False)
+            def embed_query(self, text):
+                embeddings = self.embedder.encode([text], convert_to_numpy=False)
+                return embeddings[0] if embeddings else [0.0]*384
 
-        # Load embedding model
-        embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+        embeddings = HFCloudEmbeddings()
         
         index = faiss.read_index(index_path)
         with open(chunks_path, "rb") as f:

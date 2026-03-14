@@ -61,6 +61,48 @@ How would we remove 'X' from this stack?
 """
 
 # ---------------- FUNCTION TO ASK QUESTIONS ----------------
+def ask_question_stream(query, session_id="default", top_k=5, custom_history_text=None):
+    """
+    Generator version of ask_question that yields response chunks.
+    """
+    # 1 Retrieve chunks from FAISS
+    top_chunks = retrieve_top_chunks(query, top_k)
+    context = "\n\n".join(top_chunks)
+
+    # 2 Load history
+    if custom_history_text is not None:
+        history_text = custom_history_text
+    else:
+        convo_history = SESSIONS.get(session_id, [])[-6:]
+        history_text = "\n".join([f"{msg['role'].capitalize()}: {msg['text']}" for msg in convo_history])
+
+    # 3 Stream from LLM
+    try:
+        stream = client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": SOCRATIC_SYSTEM_PROMPT},
+                {"role": "user", "content": f"Reference Knowledge:\n{context}\n\nPrevious History:\n{history_text}\n\nStudent Query: {query}"}
+            ],
+            model="llama-3.3-70b-versatile",
+            stream=True,
+        )
+        
+        full_response = ""
+        for chunk in stream:
+            content = chunk.choices[0].delta.content
+            if content:
+                full_response += content
+                yield content
+                
+        # Update Memory after full stream completion
+        if custom_history_text is None:
+            if session_id not in SESSIONS: SESSIONS[session_id] = []
+            SESSIONS[session_id].append({"role": "user", "text": query})
+            SESSIONS[session_id].append({"role": "assistant", "text": full_response})
+            
+    except Exception as e:
+        yield f" Error: {str(e)}"
+
 def ask_question(query, session_id="default", top_k=5, custom_history_text=None):
 
     # 1 Retrieve chunks from FAISS

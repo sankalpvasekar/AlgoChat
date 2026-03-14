@@ -1,9 +1,9 @@
 import json
-from django.http import JsonResponse
+from django.http import JsonResponse, StreamingHttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login as django_login
 from django.contrib.auth.models import User
-from rag_pipeline.rag_qa import ask_question, analyze_code, process_video_transcript
+from rag_pipeline.rag_qa import ask_question, ask_question_stream, analyze_code, process_video_transcript
 from rag_pipeline.transcript_service import extract_video_id, get_transcript
 from rag_pipeline.video_processor import chunk_transcript
 from rag_pipeline.video_rag import index_video_transcript, query_video_rag
@@ -111,13 +111,19 @@ def ask_rag(request):
             else:
                 history_text = ""
             
-            answer = ask_question(query, session_id=session_id, custom_history_text=history_text)
-            
-            Message.objects.create(conversation=conversation, role='user', content=query)
-            Message.objects.create(conversation=conversation, role='assistant', content=answer)
-            conversation.save()
-            
-            return JsonResponse({'answer': answer})
+            # Using streaming response
+            def stream_generator():
+                full_text = ""
+                for chunk in ask_question_stream(query, session_id=session_id, custom_history_text=history_text):
+                    full_text += chunk
+                    yield chunk
+                
+                # After stream ends, save final assistant message to DB
+                Message.objects.create(conversation=conversation, role='user', content=query)
+                Message.objects.create(conversation=conversation, role='assistant', content=full_text)
+                conversation.save()
+
+            return StreamingHttpResponse(stream_generator(), content_type='text/plain')
             
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
@@ -235,7 +241,7 @@ def video_chat(request):
                     context_parts.append(f"[{time_str}] {c['text']}")
                 context_text = "\n\n".join(context_parts)
             
-            # 2. Call LLM
+            # 2. Call LLM (Streaming)
             import os
             from groq import Groq
             client = Groq(api_key=os.getenv("GROQ_API_KEY"))
@@ -264,18 +270,19 @@ def video_chat(request):
             {query}
             """
             
-            completion = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.5,
-            )
-            
-            answer = completion.choices[0].message.content
-            
-            return JsonResponse({
-                'answer': answer,
-                'context': context_text
-            })
+            def stream_video_response():
+                stream = client.chat.completions.create(
+                    model="llama-3.3-70b-versatile",
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.5,
+                    stream=True
+                )
+                for chunk in stream:
+                    content = chunk.choices[0].delta.content
+                    if content:
+                        yield content
+
+            return StreamingHttpResponse(stream_video_response(), content_type='text/plain')
             
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)

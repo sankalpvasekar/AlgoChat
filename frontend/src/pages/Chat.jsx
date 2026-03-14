@@ -108,23 +108,43 @@ export default function Chat() {
             user_id: user?.id
         }) 
       });
-      
-      let dataText = "";
-      if (response.ok) {
-          const data = await response.json();
-          dataText = data.answer || "No response received";
-          if (isNewConversation) {
-              fetchConversations();
-          }
-      } else {
-          dataText = `Error from server: ${response.status} ${response.statusText}`;
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Server error: ${response.status} ${errorText}`);
       }
 
-      setMessages((prev) => [...prev, { role: 'assistant', content: dataText }]);
+      // Add a placeholder assistant message
+      setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let assistantText = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        assistantText += chunk;
+
+        setMessages((prev) => {
+          const next = [...prev];
+          if (next.length > 0) {
+            next[next.length - 1] = { ...next[next.length - 1], content: assistantText };
+          }
+          return next;
+        });
+      }
+
+      if (isNewConversation) {
+        fetchConversations();
+      }
+
     } catch (error) {
       setMessages((prev) => [
           ...prev, 
-          { role: 'assistant', content: `Network error connecting to backend: ${error.message}. Is your Django server running?` }
+          { role: 'assistant', content: `Network error connecting to backend: ${error.message}.` }
       ]);
     } finally {
       setIsLoading(false);
