@@ -22,12 +22,13 @@ export default function Practice() {
        setSessionId(uuidv4());
    }, []);
 
-   const handleRunAndAnalyze = async () => {
-       setIsAnalyzing(true);
-       setOutput(`*Executing logic on backend...*\n\n*Sending to AI Tutor for Socratic analysis...*`);
+    const handleRunAndAnalyze = async () => {
+        setIsAnalyzing(true);
+        setOutput(`*Executing logic on backend...*\n\n*Sending to AI Tutor for Socratic analysis...*`);
 
-       try {
-            const response = await fetch('http://localhost:8000/analyze/', {
+        try {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            const response = await fetch(`${apiUrl}/api/analyze/`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
@@ -45,12 +46,12 @@ export default function Practice() {
             } else {
                 setOutput(`⚠️ Failed to get Socratic hints: ${response.statusText}`);
             }
-       } catch (error) {
-           setOutput(`⚠️ Backend Connection Error: ${error.toString()}`);
-       } finally {
-           setIsAnalyzing(false);
-       }
-   };
+        } catch (error) {
+            setOutput(`⚠️ Backend Connection Error: ${error.toString()}`);
+        } finally {
+            setIsAnalyzing(false);
+        }
+    };
 
    const resetCanvas = () => {
        setLearningGoal('Implement a Fibonacci sequence');
